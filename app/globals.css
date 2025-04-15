@@ -1,21 +1,1279 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+body {
+  width: 100vw;
+  /* height: 100vh; */ /* Remove fixed height */
+  background-color: #0f0f0f;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-y: auto; /* Allow vertical scroll by default */
+}
+
+.loading,
+.error {
+  color: white;
+  padding: 1em;
+  text-align: center;
+}
+
+.error {
+  color: #ff6b6b;
+} 
+
+.filter-select {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.filter-select:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+.filter-select option {
+  background: #1a1a1a;
+}
+
+.trailer-button {
+  display: inline-block;
+  margin-top: 1em;
+  padding: 0.5em 1em;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: white;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.trailer-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.credits,
+.director,
+.cinematographer {
+  margin-top: 0.5em;
+}
+
+.project-img iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 4px;
+  background: #000;
+}
+
+.blurry-prev iframe {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  z-index: -1;
+}
+
+.overlay {
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+}
+nav {
+  gap: 1em;
+  padding: 1em;
+}
+
+img,
+video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+h1 {
+  color: #fff;
+  font-size: 36px;
+  font-weight: 500;
+}
+
+a,
+p {
+  text-decoration: none;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+.blurry-prev {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  backdrop-filter: blur(80px);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}
+
+.col {
+  position: relative;
+  padding: 1em;
+}
+
+.site-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+nav {
+  display: flex;
+  gap: 1em;
+}
+
+.header {
+  /* Align menu towards the vertical center */
+  margin-top: auto;
+  margin-bottom: auto;
+  padding-left: 1em; 
+  /* Added to help center the transformed items */
+  display: flex;
+  justify-content: flex-start; /* Align items to the left */
+  align-items: center; /* Center items vertically */
+  height: 200px; /* Give header some height for centering context */
+}
+
+.project-preview {
+  flex: 2;
+}
+
+.project-details {
+  position: absolute;
+  top: 1em;
+  left: 1em;
+  width: 50%;
+}
+
+.title {
+  margin-bottom: 0.5em;
+}
+
+.info {
+  margin-bottom: 1em;
+}
+
+.title,
+.credits,
+.director,
+.cinematographer,
+.line {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0% 100%);
+  overflow: hidden;
+}
+
+.line {
+  overflow: hidden;
+  margin-bottom: 0.25em;
+}
+
+.line span {
+  display: block;
+}
+
+.project-img {
+  position: absolute;
+  left: 1em;
+  bottom: 1em;
+  width: 75%;
+  /* Set aspect ratio container */
+  aspect-ratio: 16/9;
+  height: auto; /* Remove fixed height to maintain ratio */
+  max-height: 50%; /* Prevent from getting too large */
+  overflow: hidden;
+  transform-origin: center;
+}
+
+.gallery-wrapper {
+  z-index: 2;
+  width: 180px;
+  overflow: auto;
+  padding: 0.75em;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.gallery {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.item {
+  position: relative;
+  /* aspect-ratio: 2 / 3; */   /* Remove portrait aspect ratio */
+  aspect-ratio: 16 / 9;   /* Set landscape aspect ratio */
+  height: auto;          /* Allow height to adjust based on width and aspect ratio */
+  background-color: #aeaeae;
+  cursor: pointer;
+  overflow: hidden; /* Ensure image stays within bounds */
+}
+
+.item img {
+  width: 100%;
+  height: 100%; /* Ensure image fills the item container */
+  object-fit: cover;
+}
+
+.item::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.65);
+  transition: background-color 0.5s ease;
+}
+
+.item.active::after {
+  background-color: rgba(0, 0, 0, 0);
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto; /* Enable vertical scrolling */
+    height: auto; /* Allow content to determine height */
+  }
+
+  .container {
+    flex-direction: column;
+    min-height: 100vh; /* Minimum height of viewport */
+    height: auto; /* Allow expansion */
+    padding-bottom: 150px; /* Space for fixed gallery at bottom */
+  }
+
+  .site-info {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    min-height: fit-content;
+  }
+
+  .header {
+    position: relative;
+    top: 0;
+    text-align: center;
+    padding: 1em 0;
+  }
+
+  .project-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-height: fit-content;
+    padding: 2em 1em;
+  }
+  .copy {
+    text-align: center;
+  }
+  .project-details {
+    position: relative;
+    left: 0;
+    width: 100%;
+    text-align: left;
+    padding: 1em;
+  }
+
+  .project-img {
+    position: relative;
+    left: 0;
+    width: 100%;
+    margin: 2em 0;
+    max-width: 800px; /* Prevent from getting too wide */
+  }
+
+  .gallery-wrapper {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    height: auto;
+    max-height: 180px; /* Adjust max-height if needed for larger items */
+  }
+
+  .gallery {
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 1em;
+    height: 100%;
+  }
+
+  .item {
+    flex: 0 0 250px; /* Increased mobile item width */
+    /* height will be set automatically by aspect-ratio 16/9 */
+  }
+
+  /* Add smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Ensure content doesn't get hidden behind fixed gallery */
+  .project-preview {
+    margin-bottom: 1em;
+  }
+
+  /* Adjust overlay for scrolling */
+  .blurry-prev {
+    position: fixed;
+  }
+
+  /* Ensure text remains readable on mobile */
+  .project-details {
+    margin-bottom: 4em;
+  }
+
+  /* Better spacing for navigation */
+  nav {
+    padding: 1em 0;
+    justify-content: center;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .site-info {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .header {
+    position: relative;
+    top: 0;
+    text-align: center;
+    padding: 1em 0;
+  }
+
+  .project-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .project-details {
+    position: relative;
+    left: 0;
+    width: 100%;
+    text-align: left;
+    padding: 1em;
+  }
+
+  .project-img {
+    position: relative;
+    left: 0;
+    width: 100%;
+    margin: 1em 0;
+  }
+
+  .gallery-wrapper {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .gallery {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+
+  .item {
+    flex: 0 0 100px;
+    height: 120px;
+    width: 100px;
+  }
+}
+
+/* === Search Page Styles === */
+
+.page-container {
+  padding: 2em;
+  color: #fff;
+  margin: 0 auto;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 1.5em;
+  font-size: 2.5em;
+}
+
+.search-input {
+  display: block;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto 2.5em auto;
+  padding: 1em 1.5em;
+  font-size: 1.1em;
+  background-color: rgba(30, 30, 30, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border-radius: 30px;
+  outline: none;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+}
+
+.search-input:focus {
+  background-color: rgba(40, 40, 40, 0.8);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.search-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2em;
+  padding: 0 1em;
+}
+
+.search-result-item {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  text-decoration: none;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.search-result-item:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.search-result-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.search-result-title {
+  padding: 1em;
+  font-size: 1em;
+  text-align: center;
+  font-weight: 600;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* === Movie Details Page Styles === */
+
+
+/* === New Gradient Movie Details Styles === */
+
+.movie-detail-layout {
+  background-color: #0f0f0f;
+  color: #fff;
+  /* min-height: 100vh; */ /* Remove height restrictions */
+  /* overflow: hidden; */ /* Remove overflow hidden */
+  /* display: flex; */ /* Remove flex layout if using natural flow */
+  /* flex-direction: column; */
+  width: 100%; /* Ensure it takes full width */
+}
+
+.backdrop-section {
+  position: relative;
+  height: 70vh; /* Keep backdrop height for visual */
+  width: 100%;
+  overflow: hidden;
+  /* flex-shrink: 0; */ /* No longer needed without flex */
+}
+
+.backdrop-section img {
+  filter: brightness(0.5); /* Keep it relatively dark */
+}
+
+.backdrop-gradient-overlay {
+  position: absolute;
+  bottom: 0; /* Position at the bottom of backdrop */
+  left: 0;
+  width: 100%;
+  height: 50%; /* Gradient covers bottom half of backdrop */
+  background: linear-gradient(to top, #0f0f0f 20%, rgba(15, 15, 15, 0));
+  z-index: 2;
+}
+
+.back-home-link { /* Moved back link styling */
+  position: absolute;
+  top: 25px;
+  left: 30px;
+  z-index: 10;
+  color: #ccc;
+  text-decoration: none;
+  font-size: 1em;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 8px 15px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+.back-home-link:hover {
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.content-section {
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto; /* Center content */
+  padding: 2em 4% 4% 4%; /* Adjust padding, more top padding needed now */
+  /* margin-top: -150px; */ /* Remove negative margin */
+  position: relative; /* Keep for z-index if needed, but less critical */
+  z-index: 3;
+  /* overflow-y: auto; */ /* Remove internal scroll */
+  /* flex-grow: 1; */ /* Remove flex property */
+}
+
+.main-details-grid {
+  display: grid;
+  grid-template-columns: 300px 1fr; /* Fixed poster width, flexible info */
+  gap: 40px;
+  align-items: flex-start; /* Align top of poster and info */
+  margin-bottom: 3em;
+}
+
+.poster-column {
+  /* Styles for the poster container column */
+}
+
+.detail-poster-image {
+  width: 100%;
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+
+.detail-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin-bottom: 0.3em;
+  line-height: 1.2;
+}
+
+.meta-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 1em;
+  margin-bottom: 1em;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+.meta-tags span {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.3em 0.8em;
+  border-radius: 15px;
+}
+
+.meta-tags .rating-tag {
+  background-color: rgba(255, 200, 0, 0.8); /* Yellowish for rating */
+  color: #111;
+  font-weight: bold;
+}
+
+.detail-overview {
+  font-size: 1em;
+  line-height: 1.6;
+  color: #ccc;
+  margin-bottom: 1.5em;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  margin-bottom: 1.5em;
+}
+
+.detail-action-button {
+  padding: 0.7em 1.5em;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em; /* Space for potential icons */
+}
+
+.detail-action-button.primary {
+  background-color: #e0e0e0;
+  color: #111;
+}
+.detail-action-button.primary:disabled {
+  background-color: #555;
+  color: #999;
+  cursor: not-allowed;
+}
+.detail-action-button.primary:not(:disabled):hover {
+  background-color: #fff;
+  transform: scale(1.03);
+}
+
+.detail-action-button.secondary {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.detail-action-button.secondary:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.03);
+}
+
+.detail-meta-info {
+  font-size: 0.9em;
+  color: #aaa;
+  line-height: 1.6;
+}
+.detail-meta-info p {
+  margin-bottom: 0.3em;
+  color: inherit;
+  font-size: inherit;
+}
+.detail-meta-info strong {
+  color: #ddd;
+  margin-right: 0.4em;
+}
+
+/* --- Cast Section Styles --- */
+
+.cast-section {
+  margin-top: 3em;
+}
+
+.section-title {
+  font-size: 1.6em;
+  font-weight: 600;
+  margin-bottom: 1em;
+  color: #eee;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5em;
+}
+
+.cast-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 1.5em;
+}
+
+.cast-member {
+  text-align: center;
+}
+
+.cast-member-image {
+  width: 100%;
+  max-width: 100px; /* Control max image width */
+  height: auto;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: 8px;
+  margin: 0 auto 0.5em auto;
+  background-color: #222; /* Placeholder bg */
+}
+
+.cast-member-name {
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #ddd;
+  margin-bottom: 0.1em;
+}
+
+.cast-member-character {
+  font-size: 0.8em;
+  color: #aaa;
+}
+
+/* --- Responsive Adjustments --- */
+
+@media (max-width: 768px) {
+  .backdrop-section {
+    height: 50vh; 
+  }
+  .content-section {
+    /* margin-top: -80px; */ /* Remove negative margin */
+    padding: 1.5em 5% 5% 5%;
+    /* overflow-y: auto; */ /* Remove internal scroll */
+  }
+  .main-details-grid {
+    grid-template-columns: 1fr; /* Stack columns */
+    gap: 20px;
+    text-align: center;
+  }
+  .poster-column {
+    max-width: 200px; /* Smaller poster */
+    margin: 0 auto; /* Center poster */
+  }
+  .info-column {
+     align-items: center; /* Center text/buttons */
+  }
+  .detail-title {
+    font-size: 2.2em;
+  }
+  .meta-tags {
+     justify-content: center;
+  }
+  .detail-actions {
+     justify-content: center;
+  }
+  .cast-list {
+     grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+     gap: 1em;
+  }
+   .back-home-link {
+     top: 15px;
+     left: 15px;
+     padding: 6px 12px;
+     font-size: 0.9em;
+   }
+}
+
+/* General Body adjustment for scrolling pages */
+body.has-scrolling-page {
+  overflow-y: auto;
+} 
+
+/* Media query adjustments */
+@media (max-width: 768px) {
+  .page-container {
+    padding: 1em;
+  }
+  .page-title {
+    font-size: 2em;
+  }
+  .search-input {
+    font-size: 1em;
+    padding: 0.7em 1em;
+  }
+  .search-results-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 1em;
+  }
+
+  .movie-details-content {
+    flex-direction: column;
+    align-items: center; /* Center items on mobile */
+    text-align: center;
+    margin-top: 35vh;
+    padding: 2em 1em 1em 1em;
+  }
+
+  .movie-details-poster {
+    width: 60%; /* Adjust poster size */
+    max-width: 250px;
+    height: auto;
+    margin-top: -8vh; /* Adjust overlap */
+  }
+
+  .movie-details-poster img,
+  .poster-placeholder {
+    width: 100%;
+    height: auto; /* Maintain aspect ratio */
+  }
+
+   .poster-placeholder {
+    aspect-ratio: 2/3;
+  }
+
+  .movie-title {
+    font-size: 2.2em;
+  }
+  .movie-details-info {
+    margin-top: 1em;
   }
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  width: 100vw;
+  /* height: 100vh; */ /* Remove fixed height */
+  background-color: #0f0f0f;
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-y: auto; /* Allow vertical scroll by default */
 }
+
+/* Ensure specific containers that SHOULD scroll have correct height and overflow */
+.search-container,
+.movie-details-container,
+.container /* Original gallery container */ {
+  height: 100vh; /* Occupy full viewport height */
+  overflow-y: auto; /* Allow internal scrolling */
+}
+
+
+
+/* Ensure search container also has proper height/scroll */
+.search-container {
+  /* height: 100vh; */ /* Remove fixed height */
+  /* overflow-y: auto; */ /* Remove internal scroll */
+  padding-top: 2em; 
+  padding-bottom: 2em;
+  min-height: 100vh; /* Ensure it takes at least full viewport height */
+}
+
+
+/* Ensure original gallery page still works */
+.container /* Original gallery container */ {
+  height: 100vh; 
+  overflow: hidden; /* Keep this hidden as it manages internal layout */
+}
+
+/* New Styles for Dropdown */
+.displayr-title-container {
+  /* display: inline-block; */ /* Let it take block width if needed */
+  position: relative; /* Ensure dropdown is positioned relative to this */
+  /* cursor: default; */
+  /* padding: 0.5em 0; */
+  margin-top: 1em;
+}
+
+.title-clickable-area {
+  display: inline-flex; /* Align title and arrow */
+  align-items: center;
+  cursor: pointer; /* Indicate clickable */
+  padding: 0.5em 0; /* Add padding for click area */
+  user-select: none; /* Prevent text selection on click */
+}
+
+.title-clickable-area h1 {
+  margin-right: 0.3em; /* Space between title and arrow */
+}
+
+.dropdown-arrow {
+  font-size: 0.7em; /* Smaller arrow */
+  color: #aaa; /* Dimmed color */
+  transition: transform 0.2s ease; /* Add rotation effect */
+}
+
+/* Rotate arrow when dropdown is open (requires JS to add class or conditional style) */
+/* We can simulate this by styling based on container state if needed, */
+/* but toggling state is usually enough */
+
+.displayr-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: rgba(30, 30, 30, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 8px;
+  padding: 0.75em;
+  margin-top: 0.5em;
+  min-width: 180px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 100;
+  opacity: 1; /* Keep opacity logic simple for click toggle */
+  transition: opacity 0.2s ease, transform 0.2s ease; /* Add transform transition */
+  transform: translateY(-5px); /* Start slightly up */
+  pointer-events: auto;
+}
+/* Hide dropdown when state is false (handled by conditional rendering in JSX) */
+/* We don't strictly need a hidden class with conditional rendering */
+
+
+
+/* Style for the new button */
+.project-details-button {
+  display: inline-block;
+  margin-top: 1.5em;
+  margin-right: 1.5em; /* Space above the button */
+  padding: 0.6em 1.2em;
+  background-color: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.99em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.project-details-button:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.menu-item {
+  font-size: clamp(2.2em, 5vw, 3.2em); 
+  font-weight: 700;
+  line-height: 1.1; 
+  color: #666;
+  text-decoration: none;
+  display: block;
+  transition: color 0.3s ease, transform 0.4s ease; 
+  cursor: pointer;
+  transform: translateY(0) scale(1.0); 
+  width: fit-content; 
+  margin-bottom: 0.2em; /* Add small gap between items */
+}
+
+.menu-item.active {
+  color: #eee;
+  /* Keep transform subtle or remove if centering is enough */
+  /* transform: translateY(0) scale(1.05); */ 
+}
+
+/* Remove specific positional transforms */
+/* Style for inactive items */
+.menu-item:not(.active) {
+  color: #666;
+  /* Remove explicit transforms, rely on parent centering */
+  /* transform-origin: center left; */ 
+}
+
+/* Specifically move the first item up IF it's not active */
+/* .vertical-menu-container a:first-child:not(.active) {
+  transform: translateY(-70%) scale(0.9); 
+} */
+
+/* Specifically move the second item down IF it's not active */
+/* .vertical-menu-container a:nth-child(2):not(.active) {
+  transform: translateY(70%) scale(0.9); 
+} */
+
+/* Styles for Side Menu Component Container */
+.side-menu-container {
+  /* This container helps position the menu content */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Vertically center menu items */
+  height: 100%; /* Take full height of its column */
+  padding-left: 1em;
+}
+.vertical-menu-content {
+  /* Styles specific to the content wrapper inside SideMenu if needed */
+}
+
+
+/* === Search Page Layout Styles === */
+
+.search-layout-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; /* Prevent overall layout scroll */
+  background-color: #0f0f0f;
+}
+
+.side-menu-column {
+  flex: 1; 
+  max-width: 350px; 
+  padding: 2em; 
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center; 
+  /* Add for background effect */
+  position: relative; 
+  isolation: isolate;
+  transition: background-color 0.5s ease; /* Add transition if base color changes */
+}
+
+/* Pseudo-element for side menu dynamic background */
+.side-menu-column::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--dynamic-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  z-index: -1;
+  filter: blur(40px); /* Apply same blur */
+  /* Optional: Adjust background properties specifically for side menu if needed */
+}
+
+/* Fade in the pseudo-element when active */
+.side-menu-column.bg-active::before {
+  opacity: 0.15; /* Match opacity */
+}
+
+/* Optional: Adjust base background when active */
+.side-menu-column.bg-active {
+  /* background-color: rgba(15, 15, 15, 0.6); */ /* Optional base color change */
+}
+
+.search-content-area {
+  flex: 2.5; 
+  padding: 2em 3em; 
+  overflow-y: auto; 
+  position: relative; /* Needed for pseudo-element */
+  isolation: isolate; /* Create new stacking context */
+
+  /* Glassmorphism (Fallback/Base) */
+  background-color: rgba(25, 25, 25, 0.5); 
+  backdrop-filter: blur(20px); 
+  border-left: 1px solid rgba(255, 255, 255, 0.1); 
+  transition: background-color 0.5s ease; /* Transition base bg */
+}
+
+/* Pseudo-element for dynamic background image */
+.search-content-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: var(--dynamic-bg-image, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+  z-index: -1;
+  /* Add heavy blur */
+  filter: blur(40px); /* Adjust pixel value for desired blur intensity */
+}
+
+/* When bg-active class is present, fade in the pseudo-element */
+.search-content-area.bg-active::before {
+  opacity: 0.15; /* Adjust opacity as desired (e.g., 0.1 to 0.3) */
+}
+
+/* Optional: Slightly fade the base glass background when image is active */
+.search-content-area.bg-active {
+  background-color: rgba(15, 15, 15, 0.6); /* Darker base when bg is active */
+}
+
+/* Adjust search input/results within the new content area */
+.search-content-area .search-input {
+  max-width: 100%; /* Allow input to fill width */
+  margin-left: 0;
+  margin-right: 0;
+  margin-bottom: 1.5em;
+}
+
+.search-content-area .search-results-grid {
+  padding: 0; /* Remove extra padding if content area has it */
+}
+
+.no-results-message {
+  color: #aaa;
+  text-align: center;
+  padding: 2em;
+}
+
+/* Adjust search-container styles if they conflict */
+.search-container {
+  /* These might not be needed if search-layout-container handles structure */
+  /* height: 100vh; */
+  /* overflow-y: auto; */ 
+  /* padding-top: 2em; */ 
+  /* padding-bottom: 2em; */
+  /* min-height: 100vh; */ 
+}
+
+.episodes-section {
+  margin-top: 40px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.season-overview {
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 20px;
+    max-width: 80ch; /* Limit width for readability */
+}
+
+.episodes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.episode-item {
+  display: flex;
+  gap: 20px;
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  align-items: flex-start; /* Align items to the top */
+}
+
+.episode-image-container {
+  flex-shrink: 0; /* Prevent image container from shrinking */
+}
+
+.episode-still-image {
+  border-radius: 4px;
+  object-fit: cover;
+  display: block; /* Prevents bottom space */
+}
+
+.episode-still-placeholder {
+    width: 200px;
+    height: 113px;
+    background-color: #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 0.9rem;
+    border-radius: 4px;
+}
+
+.episode-info {
+  flex-grow: 1;
+}
+
+.episode-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 5px;
+  color: #eee;
+}
+
+.episode-meta {
+    font-size: 0.85rem;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+.episode-overview {
+  font-size: 0.9rem;
+  color: #ccc;
+  line-height: 1.5;
+  margin-bottom: 8px;
+   /* Limit lines shown initially, can add expand functionality later */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.episode-rating {
+    font-size: 0.85rem;
+    color: #facc15; /* Tailwind yellow-400 */
+    font-weight: bold;
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 768px) {
+    .episode-item {
+        flex-direction: column;
+        align-items: stretch; /* Stretch items in column */
+    }
+    .episode-image-container {
+        width: 100%; /* Make image container full width */
+    }
+    .episode-still-image, .episode-still-placeholder {
+       width: 100%; /* Make image full width */
+       height: auto; /* Adjust height automatically */
+       aspect-ratio: 16 / 9; /* Maintain aspect ratio */
+       max-width: 300px; /* Optional max width */
+       margin: 0 auto 15px auto; /* Center and add bottom margin */
+    }
+    .episode-info {
+        text-align: center; /* Center text below image */
+    }
+}
+
+.all-seasons-section {
+  margin-top: 40px;
+}
+
+/* Style for each season's container */
+.season-container {
+  margin-bottom: 40px; /* Space between seasons */
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08); /* Separator line */
+}
+.season-container:last-child {
+  border-bottom: none; /* Remove border from the last season */
+  margin-bottom: 0;
+}
+
+
+.season-title {
+  font-size: 1.4em; /* Slightly smaller than main section title */
+  font-weight: 600;
+  color: #ddd;
+  margin-bottom: 10px;
+}
+
+.season-overview {
+  font-size: 0.9rem;
+  color: #bbb;
+  margin-bottom: 25px; /* Space before episodes list */
+  max-width: 80ch; 
+  line-height: 1.5;
+}
+
+.episodes-list {
+  /* Keep existing styles */
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+/* ... rest of episode item styles ... */
