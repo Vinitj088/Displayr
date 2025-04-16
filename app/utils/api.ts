@@ -14,7 +14,34 @@ export async function fetchTrendingMovies(): Promise<Movie[]> {
   const url = `${TMDB_BASE_URL}/trending/movie/day?api_key=${TMDB_API_KEY}`
   const response = await fetch(url, { next: { revalidate: 3600 } }) // Cache for 1 hour
   const data = await handleResponse<{ results: Movie[] }>(response)
-  return data.results
+  return data.results.map(movie => ({ ...movie, media_type: 'movie' }))
+}
+
+// Fetch trending TV shows
+export async function fetchTrendingTVShows(): Promise<TVShow[]> {
+  const url = `${TMDB_BASE_URL}/trending/tv/day?api_key=${TMDB_API_KEY}`
+  const response = await fetch(url, { next: { revalidate: 3600 } }) // Cache for 1 hour
+  const data = await handleResponse<{ results: TVShow[] }>(response)
+  return data.results.map(show => ({ ...show, media_type: 'tv' }))
+}
+
+// Fetch combined trending content (movies and TV shows)
+export async function fetchTrendingAll(): Promise<(Movie | TVShow)[]> {
+  const [movies, tvShows] = await Promise.all([
+    fetchTrendingMovies(),
+    fetchTrendingTVShows()
+  ])
+  
+  // Combine and shuffle the results
+  const combined = [...movies, ...tvShows]
+  
+  // Simple shuffle algorithm
+  for (let i = combined.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [combined[i], combined[j]] = [combined[j], combined[i]];
+  }
+  
+  return combined
 }
 
 // Fetch movie details
