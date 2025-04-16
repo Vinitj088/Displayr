@@ -5,7 +5,7 @@ import { fetchTrendingMovies, fetchTrendingTVShows, fetchTrendingAll } from '@/a
 import { Movie, TVShow } from '@/app/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 // Increased backdrop size for potentially better quality
 const BASE_IMAGE_URL = 'https://image.tmdb.org/t/p/';
@@ -22,6 +22,7 @@ type ContentItem = (Movie | TVShow) & {
 export default function Home() {
   const searchParams = useSearchParams();
   const filterType = searchParams.get('filter') || 'all';
+  const router = useRouter();
 
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loopedContent, setLoopedContent] = useState<ContentItem[]>([]); // For infinite scrolling
@@ -330,7 +331,12 @@ export default function Home() {
     setCurrentBackdropUrl(newBackdropUrl);
   }, [centeredContent]);
 
-  return (
+  // Handle search button click
+  const handleSearchClick = () => {
+    router.push('/search');
+  };
+
+    return (
     <>
       <div
         ref={pageContainerRef}
@@ -441,6 +447,31 @@ export default function Home() {
           ) : (
             <div className="text-gray-500">{isLoading ? 'Loading...' : 'No content selected'}</div>
           )}
+      </div>
+
+        {/* Toggle button */}
+        <div className="fixed bottom-8 right-8 z-40">
+          <button 
+            onClick={handleSearchClick}
+            className="backdrop-blur-md bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-4 py-2 flex items-center justify-center transition-all duration-300 shadow-lg text-sm"
+            aria-label="Search"
+          >
+            <svg 
+              className="w-4 h-4 mr-2"
+              xmlns="http://www.w3.org/2000/svg" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                strokeWidth={2} 
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" 
+              />
+            </svg>
+            Search
+          </button>
         </div>
 
         {/* Combine both style rules in a single style tag */}

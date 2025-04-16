@@ -11,6 +11,9 @@
 - [x] Add filtering functionality for All/Movies/TV content
 - [x] Enhance mobile responsiveness and touch interactions
 - [x] Reorganize navbar with filter options in the top right
+- [x] Update mobile view to use horizontal scrolling instead of vertical
+- [x] Add dedicated search page with rich UI
+- [x] Add glassmorphism floating action button for search access
 
 ## Potential Refinements 
 

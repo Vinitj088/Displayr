@@ -121,3 +121,17 @@ export async function searchMulti(query: string): Promise<(Movie | TVShow)[]> {
   const data = await handleResponse<{ results: (Movie | TVShow)[] }>(response)
   return data.results.filter((item) => item.media_type === "movie" || item.media_type === "tv")
 }
+
+// Fetch similar movies
+export async function fetchSimilarMovies(movieId: string | number) {
+  const url = `${TMDB_BASE_URL}/movie/${movieId}/similar?api_key=${TMDB_API_KEY}`
+  const response = await fetch(url, { next: { revalidate: 86400 } }) // Cache for 24 hours
+  return handleResponse<{ results: Movie[] }>(response)
+}
+
+// Fetch similar TV shows
+export async function fetchSimilarTV(tvId: string | number) {
+  const url = `${TMDB_BASE_URL}/tv/${tvId}/similar?api_key=${TMDB_API_KEY}`
+  const response = await fetch(url, { next: { revalidate: 86400 } }) // Cache for 24 hours
+  return handleResponse<{ results: TVShow[] }>(response)
+}
