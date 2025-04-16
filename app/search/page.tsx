@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { searchMulti } from '@/app/utils/api';
 import { Movie, TVShow } from '@/app/types';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 
 // Increased backdrop size for potentially better quality
 const BASE_IMAGE_URL = 'https://image.tmdb.org/t/p/';
@@ -21,7 +22,8 @@ type ContentItem = (Movie | TVShow) & {
   first_air_date?: string;
 };
 
-export default function SearchPage() {
+// Search content component that uses useSearchParams
+function SearchContent() {
   const [query, setQuery] = useState<string>('');
   const [results, setResults] = useState<ContentItem[]>([]);
   const [selectedContent, setSelectedContent] = useState<ContentItem | null>(null);
@@ -32,6 +34,7 @@ export default function SearchPage() {
   const [isDetailOpen, setIsDetailOpen] = useState<boolean>(false);
   
   const router = useRouter();
+  const searchParams = useSearchParams();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Effect to detect mobile screens
@@ -50,6 +53,14 @@ export default function SearchPage() {
       window.removeEventListener('resize', checkIfMobile);
     };
   }, []);
+
+  // Check for query parameters on load
+  useEffect(() => {
+    const initialQuery = searchParams?.get('q');
+    if (initialQuery) {
+      setQuery(initialQuery);
+    }
+  }, [searchParams]);
 
   // Helper to get title from either movie or TV show
   const getTitle = (item: ContentItem) => {
@@ -156,8 +167,6 @@ export default function SearchPage() {
       
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60 z-[-5]" />
-
-      
 
       {/* Main content area */}
       <main className="px-4 pt-20 pb-10 min-h-screen">
@@ -454,4 +463,16 @@ export default function SearchPage() {
       `}</style>
     </div>
   );
+}
+
+// Dynamically import SearchContent with SSR disabled
+const DynamicSearchContent = dynamic(() => Promise.resolve(SearchContent), {
+  ssr: false,
+  loading: () => <div className="min-h-screen flex items-center justify-center bg-black text-white">Loading...</div>,
+});
+
+// Main page component now renders the dynamic component
+export default function SearchPage() {
+  // No Suspense needed here as dynamic handles loading state
+  return <DynamicSearchContent />;
 }

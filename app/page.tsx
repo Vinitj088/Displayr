@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, Suspense } from 'react';
 import { fetchTrendingMovies, fetchTrendingTVShows, fetchTrendingAll } from '@/app/utils/api';
 import { Movie, TVShow } from '@/app/types';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic'; // Import dynamic
 
 // Increased backdrop size for potentially better quality
 const BASE_IMAGE_URL = 'https://image.tmdb.org/t/p/';
@@ -19,9 +20,10 @@ type ContentItem = (Movie | TVShow) & {
   name?: string;
 };
 
-export default function Home() {
+// Main content component that uses useSearchParams
+function HomeContent() {
   const searchParams = useSearchParams();
-  const filterType = searchParams.get('filter') || 'all';
+  const filterType = searchParams?.get('filter') || 'all';
   const router = useRouter();
 
   const [content, setContent] = useState<ContentItem[]>([]);
@@ -483,4 +485,16 @@ export default function Home() {
       </div>
     </>
   );
+}
+
+// Dynamically import HomeContent with SSR disabled
+const DynamicHomeContent = dynamic(() => Promise.resolve(HomeContent), {
+  ssr: false,
+  loading: () => <div className="min-h-screen flex items-center justify-center bg-black text-white">Loading...</div>,
+});
+
+// Main page component now renders the dynamic component
+export default function Home() {
+  // No Suspense needed here as dynamic handles loading state
+  return <DynamicHomeContent />;
 }

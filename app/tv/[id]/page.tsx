@@ -19,9 +19,8 @@ interface TVPageProps {
 }
 
 export default function TVPage({ params }: TVPageProps) {
-  // Use the hook-based approach
   const routeParams = useParams();
-  const tvId = routeParams.id as string;
+  const tvId = routeParams?.id ?? '';
 
   const [show, setShow] = useState<any>(null);
   const [credits, setCredits] = useState<any>(null);
@@ -53,10 +52,10 @@ export default function TVPage({ params }: TVPageProps) {
       setIsLoading(true);
       try {
         const [showData, creditsData, trailerData, similarData] = await Promise.all([
-          fetchTVDetails(tvId),
-          fetchTVCredits(tvId),
-          fetchTVTrailer(tvId),
-          fetchSimilarTV(tvId)
+          fetchTVDetails(Number(tvId)),
+          fetchTVCredits(Number(tvId)),
+          fetchTVTrailer(Number(tvId)),
+          fetchSimilarTV(Number(tvId))
         ]);
         
         setShow(showData);

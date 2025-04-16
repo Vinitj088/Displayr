@@ -18,9 +18,11 @@ interface MoviePageProps {
 }
 
 export default function MoviePage({ params }: MoviePageProps) {
-  // Use the hook-based approach instead of unwrapping with use()
   const routeParams = useParams();
-  const movieId = routeParams.id as string;
+  if (!routeParams?.id) {
+    throw new Error('Movie ID is required');
+  }
+  const movieId = routeParams.id;
   
   const [movie, setMovie] = useState<any>(null);
   const [credits, setCredits] = useState<any>(null);
@@ -51,10 +53,10 @@ export default function MoviePage({ params }: MoviePageProps) {
       setIsLoading(true);
       try {
         const [movieData, creditsData, trailerData, similarMoviesData] = await Promise.all([
-          fetchMovieDetails(movieId),
-          fetchMovieCredits(movieId),
-          fetchMovieTrailer(movieId),
-          fetchSimilarMovies(movieId),
+          fetchMovieDetails(Number(movieId)),
+          fetchMovieCredits(Number(movieId)),
+          fetchMovieTrailer(Number(movieId)),
+          fetchSimilarMovies(Number(movieId)),
         ]);
         
         setMovie(movieData);
