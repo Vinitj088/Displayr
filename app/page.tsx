@@ -83,6 +83,154 @@ export default function Home() {
     };
   }, []);
 
+  // Calculate centered item (no debounce)
+  const updateCenteredIndexAndScrollState = useCallback(() => {
+    const scrollElement = scrollContainerRef.current;
+    if (!scrollElement || itemRefs.current.length === 0) return;
+
+    const containerRect = scrollElement.getBoundingClientRect();
+    
+    // Use different centering logic based on mobile/desktop
+    const containerCenter = isMobile 
+      ? containerRect.left + containerRect.width / 2 // Horizontal center for mobile
+      : containerRect.top + containerRect.height / 2; // Vertical center for desktop
+
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    itemRefs.current.forEach((item, index) => {
+      if (!item) return;
+      const itemRect = item.getBoundingClientRect();
+      
+      // Calculate distance to center differently for mobile/desktop
+      const itemCenter = isMobile
+        ? itemRect.left + itemRect.width / 2 // Horizontal center for mobile
+        : itemRect.top + itemRect.height / 2; // Vertical center for desktop
+      
+      const distance = Math.abs(containerCenter - itemCenter);
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    const indexChanged = centeredContentIndex !== closestIndex;
+    if (indexChanged) {
+      setCenteredContentIndex(closestIndex);
+    }
+
+    // Set scrolling state and timeout to reset it
+    setIsScrolling(true);
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = setTimeout(() => {
+      setIsScrolling(false);
+      
+      // Implement smooth snapping to the centered item
+      const targetItem = itemRefs.current[closestIndex];
+      if (targetItem && scrollElement) {
+        if (isMobile) {
+          // Horizontal snapping for mobile
+          const containerLeft = scrollElement.getBoundingClientRect().left;
+          const itemLeftRelativeToContainer = targetItem.getBoundingClientRect().left - containerLeft;
+          const desiredItemLeft = (scrollElement.clientWidth - targetItem.clientWidth) / 2;
+          const scrollToX = scrollElement.scrollLeft + itemLeftRelativeToContainer - desiredItemLeft;
+
+          scrollElement.scrollTo({
+            left: scrollToX,
+            behavior: 'smooth'
+          });
+        } else {
+          // Vertical snapping for desktop
+          const containerTop = scrollElement.getBoundingClientRect().top;
+          const itemTopRelativeToContainer = targetItem.getBoundingClientRect().top - containerTop;
+          const desiredItemTop = (scrollElement.clientHeight - targetItem.clientHeight) / 2;
+          const scrollToY = scrollElement.scrollTop + itemTopRelativeToContainer - desiredItemTop;
+
+          scrollElement.scrollTo({
+            top: scrollToY,
+            behavior: 'smooth'
+          });
+        }
+      }
+    }, 350);
+
+  }, [content.length, centeredContentIndex, isMobile]);
+
+  // Effect to attach scroll listener to the middle column
+  useEffect(() => {
+    const scrollElement = scrollContainerRef.current;
+    if (!scrollElement) return;
+
+    // Use a flag to prevent immediate snapping during native scroll
+    const handleNativeScroll = () => {
+      updateCenteredIndexAndScrollState();
+    }
+
+    scrollElement.addEventListener('scroll', handleNativeScroll, { passive: true });
+    // Initial check without snap
+    updateCenteredIndexAndScrollState();
+
+    return () => {
+      scrollElement.removeEventListener('scroll', handleNativeScroll);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, [updateCenteredIndexAndScrollState]);
+
+  // Effect to attach wheel listener to the main page container
+  useEffect(() => {
+    const pageElement = pageContainerRef.current;
+    const scrollElement = scrollContainerRef.current;
+    if (!pageElement || !scrollElement) return;
+
+    // Only enable whole-page scrolling on non-mobile devices
+    const handleWheel = (event: WheelEvent) => {
+      if (isMobile) return; // Let native scrolling work on mobile
+      
+      let targetElement = event.target as Node;
+      let isInScrollContainer = false;
+      while(targetElement && targetElement !== document.body) {
+        if (targetElement === scrollElement) { isInScrollContainer = true; break; }
+        targetElement = targetElement.parentNode as Node;
+      }
+
+      if (!isInScrollContainer) {
+        event.preventDefault();
+        // Apply scroll immediately
+        scrollElement.scrollTop += event.deltaY;
+        // Update index/state and trigger snap logic after timeout
+        updateCenteredIndexAndScrollState();
+      } else {
+        // If inside, update state but don't force snap immediately
+        updateCenteredIndexAndScrollState();
+      }
+    };
+
+    // Only add wheel handler for non-touch devices
+    if (!('ontouchstart' in window)) {
+      pageElement.addEventListener('wheel', handleWheel, { passive: false });
+    }
+
+    return () => {
+      if (!('ontouchstart' in window)) {
+        pageElement.removeEventListener('wheel', handleWheel);
+      }
+    };
+  }, [updateCenteredIndexAndScrollState, isMobile]);
+
+  // Determine scale based on scrolling state and index
+  const getScaleClass = (index: number) => {
+    if (index === centeredContentIndex && !isScrolling) {
+      return 'scale-110'; // Zoom in when centered and not scrolling
+    } else {
+      return 'scale-90'; // Zoom out during scroll or for non-centered items
+    }
+  };
+
   // Utility function to scroll to a specific content index
   const scrollToContentIndex = useCallback((index: number) => {
     if (index < 0 || index >= loopedContent.length || !scrollContainerRef.current) return;
@@ -91,18 +239,33 @@ export default function Home() {
     if (!targetItem) return;
     
     const scrollElement = scrollContainerRef.current;
-    const containerTop = scrollElement.getBoundingClientRect().top;
-    const itemTopRelativeToContainer = targetItem.getBoundingClientRect().top - containerTop;
-    const desiredItemTop = (scrollElement.clientHeight - targetItem.clientHeight) / 2;
-    const scrollToY = scrollElement.scrollTop + itemTopRelativeToContainer - desiredItemTop;
     
-    scrollElement.scrollTo({
-      top: scrollToY,
-      behavior: 'smooth'
-    });
+    if (isMobile) {
+      // Horizontal scrolling for mobile
+      const containerLeft = scrollElement.getBoundingClientRect().left;
+      const itemLeftRelativeToContainer = targetItem.getBoundingClientRect().left - containerLeft;
+      const desiredItemLeft = (scrollElement.clientWidth - targetItem.clientWidth) / 2;
+      const scrollToX = scrollElement.scrollLeft + itemLeftRelativeToContainer - desiredItemLeft;
+      
+      scrollElement.scrollTo({
+        left: scrollToX,
+        behavior: 'smooth'
+      });
+    } else {
+      // Vertical scrolling for desktop
+      const containerTop = scrollElement.getBoundingClientRect().top;
+      const itemTopRelativeToContainer = targetItem.getBoundingClientRect().top - containerTop;
+      const desiredItemTop = (scrollElement.clientHeight - targetItem.clientHeight) / 2;
+      const scrollToY = scrollElement.scrollTop + itemTopRelativeToContainer - desiredItemTop;
+      
+      scrollElement.scrollTo({
+        top: scrollToY,
+        behavior: 'smooth'
+      });
+    }
     
     setCenteredContentIndex(index);
-  }, [loopedContent.length]);
+  }, [loopedContent.length, isMobile]);
 
   // Load content based on filter
   useEffect(() => {
@@ -167,135 +330,6 @@ export default function Home() {
     setCurrentBackdropUrl(newBackdropUrl);
   }, [centeredContent]);
 
-  // Calculate centered item (no debounce)
-  const updateCenteredIndexAndScrollState = useCallback(() => {
-    const scrollElement = scrollContainerRef.current;
-    if (!scrollElement || itemRefs.current.length === 0) return;
-
-    const containerRect = scrollElement.getBoundingClientRect();
-    const containerCenterY = containerRect.top + containerRect.height / 2;
-
-    let closestIndex = 0;
-    let minDistance = Infinity;
-
-    itemRefs.current.forEach((item, index) => {
-      if (!item) return;
-      const itemRect = item.getBoundingClientRect();
-      const itemCenterY = itemRect.top + itemRect.height / 2;
-      const distance = Math.abs(containerCenterY - itemCenterY);
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = index;
-      }
-    });
-
-    const indexChanged = centeredContentIndex !== closestIndex;
-    if (indexChanged) {
-        setCenteredContentIndex(closestIndex);
-    }
-
-    // Set scrolling state and timeout to reset it
-    setIsScrolling(true);
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    scrollTimeoutRef.current = setTimeout(() => {
-      setIsScrolling(false);
-      // Only perform snap on non-mobile
-      if (!isMobile) {
-        // Implement smooth snapping to the centered item
-        const targetItem = itemRefs.current[closestIndex];
-        if (targetItem && scrollElement) {
-            const containerTop = scrollElement.getBoundingClientRect().top;
-            const itemTopRelativeToContainer = targetItem.getBoundingClientRect().top - containerTop;
-            const desiredItemTop = (scrollElement.clientHeight - targetItem.clientHeight) / 2;
-            const scrollToY = scrollElement.scrollTop + itemTopRelativeToContainer - desiredItemTop;
-
-            scrollElement.scrollTo({
-                top: scrollToY,
-                behavior: 'smooth'
-            });
-        }
-      }
-    }, 350); // <-- Increased timeout duration to 350ms
-
-  }, [content.length, centeredContentIndex, isMobile]);
-
-  // Effect to attach scroll listener to the middle column
-  useEffect(() => {
-    const scrollElement = scrollContainerRef.current;
-    if (!scrollElement) return;
-
-    // Use a flag to prevent immediate snapping during native scroll
-    const handleNativeScroll = () => {
-        updateCenteredIndexAndScrollState(); // Don't snap on every native scroll tick
-    }
-
-    scrollElement.addEventListener('scroll', handleNativeScroll, { passive: true });
-    // Initial check without snap
-    updateCenteredIndexAndScrollState();
-
-    return () => {
-      scrollElement.removeEventListener('scroll', handleNativeScroll);
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, [updateCenteredIndexAndScrollState]);
-
-  // Effect to attach wheel listener to the main page container
-  useEffect(() => {
-    const pageElement = pageContainerRef.current;
-    const scrollElement = scrollContainerRef.current;
-    if (!pageElement || !scrollElement) return;
-
-    // Only enable whole-page scrolling on non-mobile devices
-    const handleWheel = (event: WheelEvent) => {
-      if (isMobile) return; // Let native scrolling work on mobile
-      
-      let targetElement = event.target as Node;
-      let isInScrollContainer = false;
-      while(targetElement && targetElement !== document.body) {
-        if (targetElement === scrollElement) { isInScrollContainer = true; break; }
-        targetElement = targetElement.parentNode as Node;
-      }
-
-      if (!isInScrollContainer) {
-        event.preventDefault();
-        // Apply scroll immediately
-        scrollElement.scrollTop += event.deltaY;
-        // Update index/state and trigger snap logic after timeout
-        updateCenteredIndexAndScrollState(); // Request snap after this scroll
-      } else {
-         // If inside, update state but don't force snap immediately
-         updateCenteredIndexAndScrollState();
-      }
-    };
-
-    // Only add wheel handler for non-touch devices
-    if (!('ontouchstart' in window)) {
-      pageElement.addEventListener('wheel', handleWheel, { passive: false });
-    }
-
-    return () => {
-      if (!('ontouchstart' in window)) {
-        pageElement.removeEventListener('wheel', handleWheel);
-      }
-    };
-  }, [updateCenteredIndexAndScrollState, isMobile]);
-
-  // Determine scale based on scrolling state and index
-  const getScaleClass = (index: number) => {
-    // On mobile, no zoom effect to save space
-    if (isMobile) return 'scale-100';
-    if (index === centeredContentIndex && !isScrolling) {
-        return 'scale-110'; // Zoom in when centered and not scrolling
-    } else {
-        return 'scale-90'; // Zoom out during scroll or for non-centered items
-    }
-  };
-
   return (
     <>
       <div
@@ -309,7 +343,7 @@ export default function Home() {
             backgroundImage: currentBackdropUrl ? `url(${currentBackdropUrl})` : 'none',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            filter: 'blur(80px)', // Direct blur on the image itself
+            filter: 'blur(80px)',
             opacity: 0.5,
           }}
         ></div>
@@ -322,22 +356,23 @@ export default function Home() {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold">Displayr</h1>
         </div>
 
-        {/* Middle Section - Full width on mobile, 1/3 on desktop */}
+        {/* Middle Section - Horizontal scroll on mobile, vertical on desktop */}
         <div
           ref={scrollContainerRef}
-          className="w-full md:w-1/3 h-[50vh] md:h-full overflow-y-scroll no-scrollbar flex flex-col items-center py-8 md:py-16 order-3 md:order-2"
+          className="w-full md:w-1/3 h-[50vh] md:h-full overflow-x-auto md:overflow-x-hidden overflow-y-hidden md:overflow-y-auto no-scrollbar flex flex-row md:flex-col items-center md:items-center py-0 px-4 md:py-16 md:px-0 order-3 md:order-2"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {isLoading && <div className="text-center p-10">Loading...</div>}
           {error && <div className="text-center p-10 text-red-500">{error}</div>}
           
-          <div className="h-[10vh] md:h-[calc(50vh-225px)] flex-shrink-0"></div>
+          {/* Spacer for mobile (left) and desktop (top) */}
+          <div className="w-[10vw] md:w-auto h-auto md:h-[calc(50vh-225px)] flex-shrink-0"></div>
           
           {!isLoading && !error && loopedContent.map((item, index) => (
             <div
-              key={`${item.id}-${index}`} // Use compound key for repeated items
+              key={`${item.id}-${index}`}
               ref={(el: HTMLDivElement | null) => { itemRefs.current[index] = el; }}
-              className={`flex-shrink-0 w-[200px] md:w-[300px] h-[300px] md:h-[450px] my-2 md:my-4 relative cursor-pointer transition-all duration-500 ease-out ${getScaleClass(index)}`}
+              className={`flex-shrink-0 w-[180px] md:w-[300px] h-[270px] md:h-[450px] mx-2 my-0 md:mx-0 md:my-4 relative cursor-pointer transition-all duration-500 ease-out ${getScaleClass(index)}`}
               style={{ opacity: index === centeredContentIndex ? 1 : 0.5 }}
             >
               <Link 
@@ -360,10 +395,12 @@ export default function Home() {
               </Link>
             </div>
           ))}
-          <div className="h-[10vh] md:h-[calc(50vh-225px)] flex-shrink-0"></div>
+          
+          {/* Spacer for mobile (right) and desktop (bottom) */}
+          <div className="w-[10vw] md:w-auto h-auto md:h-[calc(50vh-225px)] flex-shrink-0"></div>
         </div>
 
-        {/* Right Section - Stack in middle for mobile, 1/3 width for desktop */}
+        {/* Right Section - Below content for mobile, 1/3 width for desktop */}
         <div className="w-full md:w-1/3 flex flex-col justify-center items-center md:items-end p-4 md:p-8 lg:p-12 pointer-events-none order-2 md:order-3 relative">
           {centeredContent ? (
             <div className="text-center md:text-right max-w-md relative">
